@@ -1,0 +1,19 @@
+{
+    "devDependencies": {
+        "react": "latest",
+        "react-dom": "latest",
+        "react-router": "latest",
+
+        "browserify": "latest",
+        "watchify": "latest",
+        "babelify": "latest",
+        "gulp": "latest",
+        "exorcist": "latest",
+        "vinyl-source-stream": "latest",
+        "babel-preset-react": "latest",
+        "mold-source-map": "latest",
+
+        "gulp-nodemon": "latest",
+        "express": "latest"
+    }
+}
