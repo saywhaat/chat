@@ -12,7 +12,7 @@ var Index = React.createClass({
 
 ReactDOM.render(
 	<Router>
-        <Route path="/" component={Index} />
-    </Router>,
+		<Route path="/" component={Index} />
+	</Router>,
 	document.getElementById("container")
 );
