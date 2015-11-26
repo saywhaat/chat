@@ -3,6 +3,7 @@
         "react": "latest",
         "react-dom": "latest",
         "react-router": "latest",
+        "flux": "latest",
 
         "browserify": "latest",
         "watchify": "latest",
@@ -15,6 +16,10 @@
 
         "gulp-nodemon": "latest",
         "express": "latest",
-        "mongodb": "latest"
+        "mongodb": "latest",
+        "body-parser": "latest",
+        "lodash": "latest",
+        "cookie-parser": "latest",
+        "crypto": "latest"
     }
 }

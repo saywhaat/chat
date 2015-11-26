@@ -1,17 +1,18 @@
-var React = require("react");
+window.React = require("react");
+
 var ReactDOM = require("react-dom");
 
 var Router = require("react-router").Router;
 var Route = require("react-router").Route;
+var createBrowserHistory = require("history/lib/createBrowserHistory");
 
-var Index = React.createClass({
-	render: function(){
-		return <h1>Hello</h1>
-	}
-});
+var userActionCreator = require("actions/userActionCreator.js");
+var Index = require("components/index.jsx");
+
+userActionCreator.fetchToken();
 
 ReactDOM.render(
-	<Router>
+	<Router history={createBrowserHistory()}>
 		<Route path="/" component={Index} />
 	</Router>,
 	document.getElementById("container")
