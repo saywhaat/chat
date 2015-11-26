@@ -5,6 +5,13 @@
         "react-router": "latest",
         "flux": "latest",
 
+        "express": "latest",
+        "mongodb": "latest",
+        "body-parser": "latest",
+        "lodash": "latest",
+        "cookie-parser": "latest",
+        "crypto": "latest",
+
         "browserify": "latest",
         "watchify": "latest",
         "babelify": "latest",
@@ -13,13 +20,7 @@
         "vinyl-source-stream": "latest",
         "babel-preset-react": "latest",
         "mold-source-map": "latest",
-
         "gulp-nodemon": "latest",
-        "express": "latest",
-        "mongodb": "latest",
-        "body-parser": "latest",
-        "lodash": "latest",
-        "cookie-parser": "latest",
-        "crypto": "latest"
+        "gulp-node-inspector": "latest"
     }
 }

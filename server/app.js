@@ -51,6 +51,25 @@ app.post('/api/fetchToken', function(req, res) {
     }));
 });
 
+app.post('/api/me', function(req, res){
+    var token = req.body.token;
+
+    MongoClient.connect(connectionSting, function(err, db) {
+        db.collection('users').findOne({ token: token }, function(err, result){
+            if(result){
+                res.send(JSON.stringify({
+                    id: result.id,
+                    name: result.name
+                }));
+            }else{
+                res.send('');
+            }
+
+            db.close();
+        });
+    });
+});
+
 app.post('/api/signIn', function(req, res) {
     var session = req.cookies.session;
     var key = req.body.key;

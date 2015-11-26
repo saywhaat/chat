@@ -6,22 +6,22 @@ var source = require('vinyl-source-stream');
 var exorcist = require('exorcist');
 var mold = require('mold-source-map');
 var nodemon = require('gulp-nodemon');
+var nodeInspector = require('gulp-node-inspector');
 
-function onError(err) {
-    console.log(err);
-    this.emit('end');
-}
-
-gulp.task('watch', function () {
-
+gulp.task('server-watch', function(){
     nodemon({
         script: 'server/app.js',
-        watch: [
-            'server/**'
-        ]
+        watch: ['server/']
     });
+});
 
+gulp.task('client-watch', function () {
     var bundler = watchify(browserify('./client/app.jsx', {debug: true, paths: ["./client"]}).transform(babelify, {presets: ['react']}));
+
+    function onError(err) {
+        console.log(err);
+        this.emit('end');
+    }
 
     function rebundle() {
         bundler.bundle()
@@ -54,4 +54,14 @@ gulp.task('watch', function () {
     rebundle();
 });
 
-gulp.task('default', ['watch']);
+gulp.task('server-debug', function() {
+    gulp.src([]).pipe(nodeInspector());
+    nodemon({
+        script: 'server/app.js',
+        watch: ['server/'],
+        nodeArgs: ['--debug'],
+    });
+});
+
+gulp.task('default', ['server-watch', 'client-watch']);
+gulp.task('debug', ['server-debug', 'client-watch']);
