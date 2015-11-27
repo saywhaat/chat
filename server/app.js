@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser');
 var _ = require('lodash');
 var crypto = require('crypto');
 var MongoClient = require('mongodb').MongoClient;
+var WebSocket = require("websocket");
 
 var connectionSting = 'mongodb://localhost:27017/chat';
 
@@ -24,7 +25,8 @@ var server = app.listen(port, ip);
 var data = [
     { id: 1, name: "Nagibator123", hash: "eed8517d7a94834f425f78222342d17b3c72333c77b491ac7c10b8d696e0b081" },
     { id: 2, name: "test", hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
-    { id: 3, name: "Kostik", hash: "70639403d6df730ef4f2aa6be1e2e343bf208998519f758b9ee71dead3ae28b2" }
+    { id: 3, name: "Kostik", hash: "70639403d6df730ef4f2aa6be1e2e343bf208998519f758b9ee71dead3ae28b2" },
+    {id: 4, name: "Vladisha", hash: "d2df071e6354fba182e9173d14b81f11f6776bfa5d7a697943ea057790454d4a"}
 ];
 
 MongoClient.connect(connectionSting, function(err, db) {
@@ -39,7 +41,7 @@ app.use(express.static('client'));
 app.use(cookieParser());
 app.use(bodyParser.json());
 
-app.post('/api/fetchToken', function(req, res) {
+app.post('/api/getToken', function(req, res) {
     var session = req.cookies.session;
 
     if (session) {
@@ -49,25 +51,6 @@ app.post('/api/fetchToken', function(req, res) {
     res.send(JSON.stringify({
         token: null
     }));
-});
-
-app.post('/api/me', function(req, res){
-    var token = req.body.token;
-
-    MongoClient.connect(connectionSting, function(err, db) {
-        db.collection('users').findOne({ token: token }, function(err, result){
-            if(result){
-                res.send(JSON.stringify({
-                    id: result.id,
-                    name: result.name
-                }));
-            }else{
-                res.send('');
-            }
-
-            db.close();
-        });
-    });
 });
 
 app.post('/api/signIn', function(req, res) {
@@ -83,7 +66,7 @@ app.post('/api/signIn', function(req, res) {
         db.collection('users').findOne({ hash: hash }, function(err, result){
             if(result){
                 res.send(JSON.stringify({
-                    token: 1234
+                    token: hash
                 }));
             }else{
                 res.send(JSON.stringify({
@@ -99,3 +82,69 @@ app.post('/api/signIn', function(req, res) {
 app.get('*', function (request, response){
     response.sendFile(__dirname + '/index.html');
 });
+
+var wsServer = new WebSocket.server({
+    httpServer: server
+});
+
+var connections = [];
+
+wsServer.on('request', function(request) {
+    var connection = request.accept(null, request.origin);
+    var index = connections.push(connection) - 1;
+
+    connection.on('close', function() {
+        connections.splice(index, 1);
+    });
+
+    connection.on('message', function(message) {
+        var data = JSON.parse(message.utf8Data);
+        var token = data.token;
+
+
+        MongoClient.connect(connectionSting, function(err, db) {
+            db.collection('users').findOne({ hash: token }, function(err, result){
+                if(result){
+                    var userId = result.id;
+
+                    db.collection('messages').insertOne({
+                        text: data.text,
+                        userId: userId
+                    }, function(){
+                        connections.forEach(function(connection){
+                			connection.sendUTF(JSON.stringify({
+                                text: data.text,
+                                userId: userId
+                            }));
+                		});
+
+                        db.close();
+                    });
+                }
+            });
+        });
+    });
+});
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/

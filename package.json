@@ -11,6 +11,7 @@
         "lodash": "latest",
         "cookie-parser": "latest",
         "crypto": "latest",
+        "websocket": "latest",
 
         "browserify": "latest",
         "watchify": "latest",
@@ -21,6 +22,9 @@
         "babel-preset-react": "latest",
         "mold-source-map": "latest",
         "gulp-nodemon": "latest",
-        "gulp-node-inspector": "latest"
+        "gulp-node-inspector": "latest",
+        "gulp-uglify": "latest",
+        "envify": "latest",
+        "vinyl-buffer": "latest"
     }
 }

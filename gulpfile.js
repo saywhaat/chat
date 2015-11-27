@@ -7,6 +7,9 @@ var exorcist = require('exorcist');
 var mold = require('mold-source-map');
 var nodemon = require('gulp-nodemon');
 var nodeInspector = require('gulp-node-inspector');
+var uglify = require('gulp-uglify');
+var envify = require('envify/custom');
+var buffer = require('vinyl-buffer');
 
 gulp.task('server-watch', function(){
     nodemon({
@@ -54,6 +57,20 @@ gulp.task('client-watch', function () {
     rebundle();
 });
 
+gulp.task('client-build', function(){
+    var bundler = browserify('./client/app.jsx', {paths: ["./client"]})
+        .transform(babelify, {presets: ['react']})
+        .transform('envify', {global: true, NODE_ENV: 'production'});
+
+    bundler.bundle()
+
+    .pipe(source('bundle.js'))
+    .pipe(buffer())
+    .pipe(uglify())
+
+    .pipe(gulp.dest('./client'));
+});
+
 gulp.task('server-debug', function() {
     gulp.src([]).pipe(nodeInspector());
     nodemon({
@@ -65,3 +82,4 @@ gulp.task('server-debug', function() {
 
 gulp.task('default', ['server-watch', 'client-watch']);
 gulp.task('debug', ['server-debug', 'client-watch']);
+gulp.task('build', ['client-build']);

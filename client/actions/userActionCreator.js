@@ -11,8 +11,8 @@ function setToken(token){
 
 module.exports = {
 
-    fetchToken: function(){
-        userUtils.fetchToken(function(response){
+    getToken: function(){
+        userUtils.getToken(function(response){
             setToken(response.token);
         });
     },

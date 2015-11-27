@@ -9,7 +9,7 @@ var createBrowserHistory = require("history/lib/createBrowserHistory");
 var userActionCreator = require("actions/userActionCreator.js");
 var Index = require("components/index.jsx");
 
-userActionCreator.fetchToken();
+userActionCreator.getToken();
 
 ReactDOM.render(
 	<Router history={createBrowserHistory()}>

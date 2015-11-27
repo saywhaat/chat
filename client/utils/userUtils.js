@@ -2,9 +2,9 @@ var ajaxUtils = require("utils/ajaxUtils.js");
 
 module.exports = {
 
-    fetchToken: function(response){
+    getToken: function(response){
         ajaxUtils.post({
-            url: "/api/fetchToken",
+            url: "/api/getToken",
             response: response
         });
     },
