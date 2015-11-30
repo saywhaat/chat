@@ -30,6 +30,7 @@ module.exports = React.createClass({
 		chatStore.addChangeListener(this._onChange);
 		userActionCreator.fetchFriends();
 		chatActionCreator.fetchUnread();
+		userActionCreator.fetchMyInfo();
 
 		window.onscroll = function() {
 			if($(window).scrollTop() + $(window).height() === $(document).height()) {
@@ -53,14 +54,27 @@ module.exports = React.createClass({
 	},
 
 	render: function(){
-		var friends = userStore.getFriends();
+		var myId = userStore.getMyId();
+		var myName = userStore.getMyName();
 
 		var messages = _.map(chatStore.getMessages(), function(message){
-			var user = _.find(friends, { id: message.userId });
-			var userName = user ? user.name : "";
+			var userName = "";
+			var isMyMessage = message.userId === myId;
+
+			if(isMyMessage){
+				userName = myName;
+			}else{
+				var user = userStore.getFriendById(message.userId);
+
+				if(user){
+					userName = user.name;
+				}
+			}
+
+			var userNameView = isMyMessage ? <b><i>{userName}: </i></b> : <b>{userName}: </b>;
 
 			return (
-				<div><b>{userName}: </b>{message.text}</div>
+				<div>{userNameView}{message.text}</div>
 			);
 		});
 

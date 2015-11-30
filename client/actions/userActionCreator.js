@@ -32,6 +32,16 @@ module.exports = {
                 friends: response
             });
         });
+    },
+
+    fetchMyInfo: function(){
+        userUtils.fetchMyInfo(function(response){
+            dispatcher.dispatch({
+                type: actionTypes.SET_MY_INFO,
+                name: response.name,
+                id: response.id
+            });
+        });
     }
 
 };

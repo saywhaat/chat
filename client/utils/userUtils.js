@@ -24,6 +24,14 @@ module.exports = {
             data: { token: userStore.getToken() },
             response: response
         });
+    },
+
+    fetchMyInfo: function(response){
+        ajaxUtils.post({
+            url: "/api/me",
+            data: { token: userStore.getToken() },
+            response: response
+        });
     }
 
 };

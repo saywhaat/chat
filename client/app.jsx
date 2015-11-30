@@ -12,6 +12,7 @@ var Index = require("components/index.jsx");
 userActionCreator.getToken();
 
 require("services/webSocketService.js");
+require("services/notificationService.js");
 
 ReactDOM.render(
 	<Router history={createBrowserHistory()}>

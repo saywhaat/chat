@@ -8,6 +8,7 @@ module.exports = {
         SEND_MESSAGE: {},
         REACH_BOTTOM: {},
         START_SCROLL: {},
-        SET_UNREAD: {}
+        SET_UNREAD: {},
+        SET_MY_INFO: {}
     }
 };

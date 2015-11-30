@@ -60,7 +60,7 @@ app.post('/api/friends', function(req, res) {
     MongoClient.connect(connectionSting, function(err, db) {
         db.collection('users').findOne({ hash: token }, function(err, result){
             if(result){
-                db.collection('users').find().toArray(function(err, result){
+                db.collection('users').find({ hash: { $ne: token } }).toArray(function(err, result){
                     res.send(JSON.stringify(_.map(result, function(item){
                         return {
                             id: item._id.toString(),
@@ -70,6 +70,23 @@ app.post('/api/friends', function(req, res) {
 
                     db.close();
                 });
+            }
+        });
+    });
+});
+
+app.post('/api/me', function(req, res) {
+    var token = req.body.token;
+
+    MongoClient.connect(connectionSting, function(err, db) {
+        db.collection('users').findOne({ hash: token }, function(err, result){
+            if(result){
+                res.send({
+                    id: result._id.toString(),
+                    name: result.name
+                });
+
+                db.close();
             }
         });
     });

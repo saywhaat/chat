@@ -1,46 +1,41 @@
-var port = location.hostname === "localhost" ? "8081" : "8000";
-
 var chatActionTypes = require("constants/actionTypes.js").chat;
-var userActionTypes = require("constants/actionTypes.js").user;
-var messageTypes = require("constants/messageTypes.js");
-
 var dispatcher = require("dispatcher.js");
-var chatActionCreator = require("actions/chatActionCreator.js");
 var userStore = require("stores/userStore.js");
 
-function onMessage(message){
-    var data = JSON.parse(message.data);
-
-    switch(data.type){
-        case messageTypes.RECEIVE:
-
-            chatActionCreator.receiveMessage(data.userId, data.text, data.time);
-
-            break;
-    }
-}
-
 var service = {};
+var notification;
+var timeoutId;
 
-var connection = null;
+function showNotification(text){
+    timeoutId && clearTimeout(timeoutId);
+
+    notification && notification.close();
+    notification = new Notification(text);
+
+    timeoutId = setTimeout(function(){
+        notification.close();
+        notification = null;
+    }, 2000);
+}
 
 service.dispatchToken = dispatcher.register(function(action) {
     switch (action.type) {
 
-        case userActionTypes.SET_TOKEN:
-            if(action.token){
-                connection = new WebSocket("ws://" + window.location.hostname + ":" + port);
-                connection.onmessage = onMessage;
+        case chatActionTypes.RECEIVE_MESSAGE:
+            if(userStore.getMyId() !== action.userId){
+                var name = userStore.getFriendById(action.userId).name;
+                var text = name + ": " + action.text;
+
+                if (Notification.permission === "granted") {
+                    showNotification(text);
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission(function (permission) {
+                        if (permission === "granted") {
+                            showNotification(text);
+                        }
+                    });
+                }
             }
-
-            break;
-
-        case chatActionTypes.SEND_MESSAGE:
-
-            connection.send(JSON.stringify({
-                text: action.text,
-                token: userStore.getToken()
-            }));
 
             break;
 
