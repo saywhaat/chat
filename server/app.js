@@ -5,6 +5,7 @@ var _ = require('lodash');
 var crypto = require('crypto');
 var MongoClient = require('mongodb').MongoClient;
 var WebSocket = require("websocket");
+var ObjectId = require('mongodb').ObjectID;
 
 var connectionSting = 'mongodb://localhost:27017/chat';
 
@@ -23,19 +24,19 @@ var app = express();
 var server = app.listen(port, ip);
 
 var data = [
-    { id: 1, name: "Nagibator123", hash: "eed8517d7a94834f425f78222342d17b3c72333c77b491ac7c10b8d696e0b081" },
-    { id: 2, name: "test", hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
-    { id: 3, name: "Kostik", hash: "70639403d6df730ef4f2aa6be1e2e343bf208998519f758b9ee71dead3ae28b2" },
-    {id: 4, name: "Vladisha", hash: "d2df071e6354fba182e9173d14b81f11f6776bfa5d7a697943ea057790454d4a"}
+    { name: "Nagibator123", hash: "eed8517d7a94834f425f78222342d17b3c72333c77b491ac7c10b8d696e0b081" },
+    { name: "test", hash: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08" },
+    { name: "Kostik", hash: "70639403d6df730ef4f2aa6be1e2e343bf208998519f758b9ee71dead3ae28b2" },
+    { name: "Vladisha", hash: "d2df071e6354fba182e9173d14b81f11f6776bfa5d7a697943ea057790454d4a" }
 ];
 
-MongoClient.connect(connectionSting, function(err, db) {
+/*MongoClient.connect(connectionSting, function(err, db) {
     db.collection('users').deleteMany({}, function(err, results){
         db.collection('users').insert(data, function(){
             db.close();
         });
     });
-});
+});*/
 
 app.use(express.static('client'));
 app.use(cookieParser());
@@ -51,6 +52,50 @@ app.post('/api/getToken', function(req, res) {
     res.send(JSON.stringify({
         token: null
     }));
+});
+
+app.post('/api/friends', function(req, res) {
+    var token = req.body.token;
+
+    MongoClient.connect(connectionSting, function(err, db) {
+        db.collection('users').findOne({ hash: token }, function(err, result){
+            if(result){
+                db.collection('users').find().toArray(function(err, result){
+                    res.send(JSON.stringify(_.map(result, function(item){
+                        return {
+                            id: item._id.toString(),
+                            name: item.name
+                        };
+                    })));
+
+                    db.close();
+                });
+            }
+        });
+    });
+});
+
+app.post('/api/unread', function(req, res) {
+    var token = req.body.token;
+
+    MongoClient.connect(connectionSting, function(err, db) {
+        db.collection('users').findOne({ hash: token }, function(err, result){
+            if(result){
+                var lastRead = result.lastRead || 0;
+
+                db.collection('messages').find({ time: { $gt: lastRead }}).toArray(function(err, result){
+                    res.send(JSON.stringify(_.map(result, function(item){
+                        return {
+                            text: item.text,
+                            userId: item.userId
+                        };
+                    })));
+
+                    db.close();
+                });
+            }
+        });
+    });
 });
 
 app.post('/api/signIn', function(req, res) {
@@ -101,25 +146,32 @@ wsServer.on('request', function(request) {
         var data = JSON.parse(message.utf8Data);
         var token = data.token;
 
-
         MongoClient.connect(connectionSting, function(err, db) {
             db.collection('users').findOne({ hash: token }, function(err, result){
                 if(result){
-                    var userId = result.id;
+                    var userId = result._id.toString();
 
-                    db.collection('messages').insertOne({
-                        text: data.text,
-                        userId: userId
-                    }, function(){
-                        connections.forEach(function(connection){
-                			connection.sendUTF(JSON.stringify({
-                                text: data.text,
-                                userId: userId
-                            }));
-                		});
+                    if(data.type === "send"){
+                        db.collection('messages').insertOne({
+                            text: data.text,
+                            userId: userId,
+                            time: Date.now()
+                        }, function(){
+                            connections.forEach(function(connection){
+                    			connection.sendUTF(JSON.stringify({
+                                    text: data.text,
+                                    userId: userId,
+                                    type: 'receive'
+                                }));
+                    		});
 
-                        db.close();
-                    });
+                            db.close();
+                        });
+                    }else if(data.type === "markAllRead"){
+                        db.collection('users').update({ hash: token }, { $set: { lastRead: Date.now() }}, function(){
+                            db.close();
+                        });
+                    }
                 }
             });
         });

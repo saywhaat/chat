@@ -23,6 +23,15 @@ module.exports = {
                 setToken(response.token);
             }
         });
+    },
+
+    fetchFriends: function(){
+        userUtils.fetchFriends(function(response){
+            dispatcher.dispatch({
+                type: actionTypes.SET_FRIENDS,
+                friends: response
+            });
+        });
     }
 
 };

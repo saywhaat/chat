@@ -4,6 +4,7 @@ var EventEmitter = require("events").EventEmitter;
 var _ = require("lodash");
 
 var token;
+var friends;
 
 var store = _.assign({}, EventEmitter.prototype, {
 
@@ -21,6 +22,10 @@ var store = _.assign({}, EventEmitter.prototype, {
 
     getToken: function(){
         return token;
+    },
+
+    getFriends: function(){
+        return friends;
     }
 
 });
@@ -30,6 +35,11 @@ store.dispatchToken = dispatcher.register(function(action) {
 
         case actionTypes.SET_TOKEN:
             token = action.token;
+            store.emitChange();
+            break;
+
+        case actionTypes.SET_FRIENDS:
+            friends = action.friends;
             store.emitChange();
             break;
 

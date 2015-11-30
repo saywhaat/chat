@@ -11,6 +11,8 @@ var Index = require("components/index.jsx");
 
 userActionCreator.getToken();
 
+require("services/webSocketService.js");
+
 ReactDOM.render(
 	<Router history={createBrowserHistory()}>
 		<Route path="/" component={Index} />

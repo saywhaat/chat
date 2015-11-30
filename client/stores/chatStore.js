@@ -4,6 +4,7 @@ var EventEmitter = require("events").EventEmitter;
 var _ = require("lodash");
 
 var messages = [];
+var isBottomReached = true;
 
 var store = _.assign({}, EventEmitter.prototype, {
 
@@ -21,6 +22,10 @@ var store = _.assign({}, EventEmitter.prototype, {
 
     getMessages: function(){
         return messages;
+    },
+
+    isBottomReached: function(){
+        return isBottomReached;
     }
 
 });
@@ -31,8 +36,24 @@ store.dispatchToken = dispatcher.register(function(action) {
         case actionTypes.RECEIVE_MESSAGE:
             messages.push({
                 userId: action.userId,
-                text: action.text
+                text: action.text,
+                time: action.time
             });
+            store.emitChange();
+            break;
+
+        case actionTypes.REACH_BOTTOM:
+            isBottomReached = true;
+            store.emitChange();
+            break;
+
+        case actionTypes.START_SCROLL:
+            isBottomReached = false;
+            store.emitChange();
+            break;
+
+        case actionTypes.SET_UNREAD:
+            messages = action.messages.concat(messages);
             store.emitChange();
             break;
 

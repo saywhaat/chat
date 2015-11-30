@@ -1,6 +1,5 @@
-var port = location.hostname === "localhost" ? "8081" : "8000";
-
 var chatActionCreator = require("actions/chatActionCreator.js");
+var userActionCreator = require("actions/userActionCreator.js");
 var chatStore = require("stores/chatStore.js");
 var userStore = require("stores/userStore.js");
 var _ = require("lodash");
@@ -19,44 +18,56 @@ module.exports = React.createClass({
 		this.setState({text: e.target.value});
 	},
 
-	sendMessage: function(){
-		this.setState({text: ""});
-		this.connection.send(JSON.stringify({
-			token: userStore.getToken(),
-			text: this.state.text
-		}));
+	handleTextAreaKeyPress: function(e){
+		if(e.which === 13){
+			e.preventDefault();
+			chatActionCreator.sendMessage(this.state.text);
+			this.setState({text: ""});
+		}
 	},
 
 	componentDidMount: function() {
 		chatStore.addChangeListener(this._onChange);
+		userActionCreator.fetchFriends();
+		chatActionCreator.fetchUnread();
 
-		var connection = this.connection = new WebSocket("ws://" + window.location.hostname + ":" + port);
-
-		connection.onmessage = function (message) {
-			var data = JSON.parse(message.data);
-
-			chatActionCreator.receiveMessage(data.userId, data.text);
-		};
+		window.onscroll = function() {
+			if($(window).scrollTop() + $(window).height() === $(document).height()) {
+				chatActionCreator.reachBottom();
+			}else if(chatStore.isBottomReached()){
+				chatActionCreator.startScroll();
+			}
+		}
 	},
 
 	componentWillUnmount: function() {
 		chatStore.removeChangeListener(this._onChange);
 	},
 
+	componentDidUpdate: function(){
+		if(chatStore.isBottomReached()){
+			setTimeout(function(){
+				window.scrollTo(0, document.body.scrollHeight);
+			}, 0);
+		}
+	},
+
 	render: function(){
+		var friends = userStore.getFriends();
+
 		var messages = _.map(chatStore.getMessages(), function(message){
+			var user = _.find(friends, { id: message.userId });
+			var userName = user ? user.name : "";
+
 			return (
-				<div><span>{message.userId}: {message.text}</span></div>
+				<div><b>{userName}: </b>{message.text}</div>
 			);
 		});
 
 		return (
 			<div>
-	            <h1>Chat</h1>
 				{messages}
-				<textarea value={this.state.text} onChange={this.messageChange}></textarea>
-				<p/>
-				<button onClick={this.sendMessage}>Go</button>
+				<textarea value={this.state.text} onChange={this.messageChange} onKeyPress={this.handleTextAreaKeyPress}></textarea>
 			</div>
         );
 	}
