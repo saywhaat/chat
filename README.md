@@ -1,3 +1,3 @@
-npm install --global gulp  
+sudo npm install --global gulp  
 npm install  
 gulp  
